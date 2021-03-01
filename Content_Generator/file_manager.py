@@ -5,10 +5,11 @@
 
 import argparse
 
+
 def get_input_words_from_file(file_name):
     # Discart header
     file_name.readline()
-    
+
     # Grab words
     line = file_name.readline()
 
@@ -18,6 +19,7 @@ def get_input_words_from_file(file_name):
     words[1] = second_word[0]
     return words
 
+
 def create_output_file(words, content):
     try:
         # Attempt to create output file
@@ -25,7 +27,7 @@ def create_output_file(words, content):
 
         # Insert .csv header
         f.write('input_keywords,output_content\n')
-        
+
         if(type(words) == type([])):
             # Concatenate input keywords in one cell
             input_keywords = words[0] + ';' + words[1] + ','
@@ -34,7 +36,7 @@ def create_output_file(words, content):
         f.write(input_keywords)
 
         # Clean the content and insert quotes
-        content = content.replace('\"','\'')
+        content = content.replace('\"', '\'')
         content = '\"' + content + '\"'
 
         # Output to file

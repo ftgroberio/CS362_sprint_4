@@ -69,6 +69,7 @@ def generate_output_for_content_generator(categories):
 
     return category_list
 
+
 def generate_output_for_content_generator(categories):
     """Cleans up toy category data into a tuple of single words representing toy categories"""
     category_list = []
@@ -95,7 +96,8 @@ def main():
     except IndexError:
         request_list = multiprocessing.Queue()
         receive_list = multiprocessing.Queue()
-        content_generator = multiprocessing.Process(target=CG.content_generator_microservice, args=(request_list, receive_list))
+        content_generator = multiprocessing.Process(
+            target=CG.content_generator_microservice, args=(request_list, receive_list))
         content_generator.start()
         # if no input provided, launch GUI application
         root = gui.Tk()
@@ -105,4 +107,5 @@ def main():
     content_generator.terminate()
 
 
-if __name__ == "__main__":  main()
+if __name__ == "__main__":
+    main()

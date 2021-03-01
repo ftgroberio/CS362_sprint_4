@@ -6,7 +6,8 @@
 import wikipedia
 import warnings
 
-def get_paragraph(p,s):
+
+def get_paragraph(p, s):
     # Initialize dictionary
     page = {}
 
@@ -40,8 +41,8 @@ def get_paragraph(p,s):
                     # Check if the current paragraph has both the primary
                     #   and secondary word
                     if i.find(p) != -1 and i.find(s) != -1:
-                        page.update({'url':wiki_page.url})
-                        page.update({'content':temp})
+                        page.update({'url': wiki_page.url})
+                        page.update({'content': temp})
                         return page
         except:
             pass
