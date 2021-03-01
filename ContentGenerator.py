@@ -9,7 +9,6 @@ import Content_Generator.wikipedia_API_query as wikiAPI
 import Content_Generator.file_manager as file_manager
 import Content_Generator.communication as cm
 
-from multiprocessing import Queue
 
 def content_generator_microservice(request, receive):
     while True:
@@ -29,7 +28,7 @@ def content_generator_microservice(request, receive):
 
 if __name__ == "__main__":
     # Set up arguments
-    parser = argparse.ArgumentParser(description='Input csv file may be provided')
+    parser = argparse.ArgumentParser(description='Input csv [optional]')
 
     # Add non required argument for input file
     parser.add_argument('input', nargs='?', type=str, help='Takes a .csv file')
@@ -38,11 +37,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Check if user provided an input file argument
-    if(args.input != None):
+    if(args.input is not None):
         try:
             # Attempt to open user input
             input_file = open(args.input, 'r')
-        except:
+        except FileNotFoundError:
             # Inform user that the program encountered an issue
             print('File does not exists. Please try again.')
             exit()
@@ -50,8 +49,8 @@ if __name__ == "__main__":
         # Grab words from input file
         words = file_manager.get_input_words_from_file(input_file)
 
-        # Query wikipedia 
-        wiki = wikiAPI.get_paragraph(words[0],words[1])
+        # Query wikipedia
+        wiki = wikiAPI.get_paragraph(words[0], words[1])
 
         # If no results are returned, inform user and exit
         if(wiki == {}):
@@ -59,14 +58,14 @@ if __name__ == "__main__":
             exit()
 
         # Attempt to create output file
-        file_manager.create_output_file(words,wiki['content'])
+        file_manager.create_output_file(words, wiki['content'])
 
         # Close file descriptor
         input_file.close()
 
     # If the user did not provide an input, initialize GUI
     else:
-    
+
         window = gui.BeaverQueryGUI()
         window.mainloop()
         window.p.terminate()
