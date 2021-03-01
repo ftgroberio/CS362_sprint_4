@@ -22,23 +22,31 @@ import Content_Generator.communication as comms
 class BeaverQueryGUI(tk.Tk):
     def __init__(self):
         super(BeaverQueryGUI, self).__init__()
+        self.set_window_configurations()
+        self.GUI_initialization()
+        self.init_class_vars()
+        self.init_life_generator_microservice()
 
-
+    def set_window_configurations(self):
         self.title('BeaverQuery')
         self.resizable(0, 0)
         self.wm_geometry("480x640")
 
+    def GUI_initialization(self):
         self.init_grid()
         self.init_labels()
-        self.init_text_boxes()
+        self.init_input_text_boxes()
+        self.init_output_text_boxes()
         self.init_buttons()
-        self.init_LG_process()
 
-        self.wiki = {}
-
-    def init_LG_process(self):
+    def init_class_vars(self):
         self.request = Queue()
         self.receive = Queue()
+        self.wiki = {}
+        self.container = None
+        self.p = None
+
+    def init_life_generator_microservice(self):
         self.p = Process(target=LG.life_generator_microservice,
                          args=(self.request, self.receive))
         self.p.start()
@@ -66,7 +74,6 @@ class BeaverQueryGUI(tk.Tk):
         # Configuring columns with same weight
         container.grid_columnconfigure(0, weight=1)
         container.grid_columnconfigure(1, weight=1)
-
         self.container = container
 
     def init_labels(self):
@@ -85,26 +92,12 @@ class BeaverQueryGUI(tk.Tk):
         label.grid(row=1, column=1, sticky=tk.SW, padx=(16, 0))
 
         # OUTPUT LABELS
-        # self.url = tk.StringVar()
-        # self.paragraph = tk.StringVar()
-        url_label = tk.Label(self.container, text='Wikipedia URL:')
-        url_label.grid(row=4, column=0, columnspan=2,
-                       sticky=tk.SW, padx=(10, 0))
-        par_label = tk.Label(self.container, text='Wikipedia content:')
-        par_label.grid(row=6, column=0, columnspan=2,
-                       sticky=tk.SW, padx=(10, 0), pady=(0, 0))
-
-        self.url = url_label
-        self.par = par_label
-
-    def life_generator_labels(self):
-        self.url.config(text='(Life Generator) Amazon Item Category:')
-        self.par.config(text='(Life Generator) Amazon Item Description:')
-        self.update_gui_message('Sending request to Life Generator...')
-
-    def wikipedia_labels(self):
-        self.url.config(text='Wikipedia URL:')
-        self.par.config(text='Wikipedia content:')
+        url = tk.Label(self.container, text='Wikipedia URL:')
+        url.grid(row=4, column=0, columnspan=2,
+                 sticky=tk.SW, padx=(10, 0))
+        par = tk.Label(self.container, text='Wikipedia content:')
+        par.grid(row=6, column=0, columnspan=2,
+                 sticky=tk.SW, padx=(10, 0), pady=(0, 0))
 
     def init_buttons(self):
         # Search button
@@ -129,7 +122,7 @@ class BeaverQueryGUI(tk.Tk):
         message = message + "microservice to send a pair of words."
         tt.CreateToolTip(get_lucky_btn, message)
 
-    def init_text_boxes(self):
+    def init_input_text_boxes(self):
         # Primary keyword input box
         self.primary_word = tk.StringVar(self.container)
         self.input_pw = tk.Entry(
@@ -142,6 +135,7 @@ class BeaverQueryGUI(tk.Tk):
             self.container, textvariable=self.secondary_word)
         self.input_sw.grid(row=2, column=1, sticky=tk.E+tk.W, padx=(15, 10))
 
+    def init_output_text_boxes(self):
         # URL output box
         self.url_t = tk.Text(self.container, height=1)
         self.url_t.grid(row=5, column=0, columnspan=2,
@@ -153,7 +147,6 @@ class BeaverQueryGUI(tk.Tk):
                             sticky=tk.N+tk.S+tk.E+tk.W, padx=10, pady=6)
 
     def button_func(self):
-        self.wikipedia_labels()
         # Clear data
         self.wiki = {}
 
@@ -174,7 +167,7 @@ class BeaverQueryGUI(tk.Tk):
         self.wiki = wikiAPI.get_paragraph(pw, sw)
         if(self.wiki == {}):
             # Disregard second word if no results
-            print("Bad search, using only first word")
+            print("No result using both words... Searching now using only first word.\n")
             sw = self.primary_word.get()
             self.wiki = wikiAPI.get_paragraph(pw, sw)
 
@@ -185,18 +178,6 @@ class BeaverQueryGUI(tk.Tk):
             # Add words to the dictionary
             self.wiki.update({'words': [pw, sw]})
             self.update_gui_message(self.wiki['url'], self.wiki['content'])
-
-    def btn_output(self):
-        # Check if there exists data to be output
-        if(self.wiki == {}):
-            self.update_gui_message('Nothing to output.')
-        else:
-            # Output file
-            file_manager.create_output_file(
-                self.wiki['words'], self.wiki['content'])
-            # Exit program
-            self.p.terminate()
-            exit()
 
     def get_lucky_btn(self):
         self.wiki = {}
@@ -210,6 +191,18 @@ class BeaverQueryGUI(tk.Tk):
         self.input_pw.insert(INSERT, words[0])
         self.input_sw.delete(0, END)
         self.input_sw.insert(INSERT, words[1])
+
+    def btn_output(self):
+        # Check if there exists data to be output
+        if(self.wiki == {}):
+            self.update_gui_message('Nothing to output.')
+        else:
+            # Output file
+            file_manager.create_output_file(
+                self.wiki['words'], self.wiki['content'])
+            # Exit program
+            self.p.terminate()
+            exit()
 
     def update_gui_message(self, url_field, content_field=''):
         # Check if the second argument was supplied

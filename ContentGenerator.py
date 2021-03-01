@@ -10,6 +10,9 @@ import Content_Generator.file_manager as file_manager
 import Content_Generator.communication as cm
 
 
+# Function takes two Queue items as parameter. The Content Generator
+# process will keep listening for any requests that are entered to the
+# requests queue, and the result is sent through the receive queue.
 def content_generator_microservice(request, receive):
     while True:
         # pop words from queue
